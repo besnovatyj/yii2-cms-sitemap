@@ -367,8 +367,45 @@ final class SitemapBuilder
             'label' => $section->label,
             'icon' => $section->icon,
             'order' => $section->order,
-            'items' => $items,
+            'items' => $this->normalizeDepth($items),
         ];
+    }
+
+    /**
+     * Привести глубину блока к нулю на верхнем уровне.
+     *
+     * Деревья разделов у модулей устроены по-разному: где-то видимые узлы начинаются с `depth = 0`,
+     * где-то верхний уровень — это единственный корень-обёртка и всё содержимое лежит глубже. Без
+     * приведения второй случай давал бы блок, целиком сдвинутый вправо на один-два шага без всякого
+     * смысла.
+     *
+     * Делается здесь, а не в провайдерах: там глубина — свойство дерева, и заставлять каждый модуль
+     * помнить про отступы значило бы шесть раз написать одно и то же (и один раз забыть). Отступ —
+     * забота представления, провайдер отдаёт вложенность как есть.
+     *
+     * @param list<array<string, mixed>> $items
+     * @return list<array<string, mixed>>
+     */
+    private function normalizeDepth(array $items): array
+    {
+        if ($items === []) {
+            return $items;
+        }
+
+        $shift = min(array_map(static fn (array $item): int => (int)$item['depth'], $items));
+
+        if ($shift <= 0) {
+            return $items;
+        }
+
+        return array_map(
+            static function (array $item) use ($shift): array {
+                $item['depth'] = (int)$item['depth'] - $shift;
+
+                return $item;
+            },
+            $items,
+        );
     }
 
     /**
