@@ -1,0 +1,53 @@
+{
+  "name": "besnovatyj/yii2-cms-sitemap",
+  "description": "Карта сайта для Yii2 CMS: собирает адреса модулей через контракт SitemapProvider в XML-карту (с индексом и нарезкой по лимитам протокола) и человеческую HTML-карту. Ни одного контентного модуля не знает поимённо.",
+  "type": "yii2-extension",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Besnovatyj",
+      "email": "your-email@example.com"
+    }
+  ],
+  "minimum-stability": "stable",
+  "extra": {
+    "moduleClass": "Besnovatyj\\Sitemap\\Module",
+    "moduleId": "Sitemap",
+    "bescms": { "kind": "module" },
+    "config-plugin": {
+      "admin-menu": "src/config/adminMenu.php",
+      "common": "src/config/common.php"
+    }
+  },
+  "keywords": [
+    "yii2",
+    "cms",
+    "sitemap",
+    "seo"
+  ],
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {
+      "yiisoft/yii2-composer": true
+    },
+    "fxp-asset": {
+      "enabled": false
+    }
+  },
+  "require": {
+    "php": ">=8.4",
+    "ext-xmlwriter": "*",
+    "ext-json": "*",
+    "yiisoft/yii2": "~2.0.0",
+    "besnovatyj/yii2-cms-kernel": "^1.0",
+    "besnovatyj/yii2-cms-contracts": "^1.0"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest"
+  },
+  "autoload": {
+    "psr-4": {
+      "Besnovatyj\\Sitemap\\": "src/"
+    }
+  }
+}
