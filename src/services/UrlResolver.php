@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Besnovatyj\Sitemap\services;
 
 use Besnovatyj\Contracts\sitemap\SitemapUrl;
+use yii\base\InvalidConfigException;
 use yii\web\UrlManager;
 
 /**
@@ -39,13 +40,17 @@ final readonly class UrlResolver
         );
     }
 
-    /** Абсолютный URL пути, введённого администратором вручную. */
+    /** Абсолютный URL пути, введённого администратором вручную.
+     * @throws InvalidConfigException
+     */
     public function forPath(string $path): string
     {
         return rtrim($this->host(), '/') . '/' . ltrim($path, '/');
     }
 
-    /** Схема и домен фронтенда — попадают в манифест, чтобы заметить смену домена. */
+    /** Схема и домен фронтенда — попадают в манифест, чтобы заметить смену домена.
+     * @throws InvalidConfigException
+     */
     public function host(): string
     {
         return (string)$this->manager->getHostInfo();

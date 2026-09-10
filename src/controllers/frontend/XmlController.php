@@ -50,7 +50,7 @@ class XmlController extends Controller
      * Файл одного раздела.
      *
      * @param string $name часть имени файла между `sitemap-` и `.xml` (напр. `blog-post-1`)
-     * @throws NotFoundHttpException
+     * @throws NotFoundHttpException|HttpException
      */
     public function actionSection(string $name): Response
     {

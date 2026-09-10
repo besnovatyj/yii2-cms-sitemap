@@ -8,7 +8,9 @@ declare(strict_types=1);
 
 namespace Besnovatyj\Sitemap\storage;
 
+use FilesystemIterator;
 use RuntimeException;
+use SplFileInfo;
 use Yii;
 use yii\helpers\FileHelper;
 
@@ -136,25 +138,49 @@ final class SitemapStorage
      * Заодно подчищаются временные файлы: сборка, прерванная на полпути (таймаут, фатал), оставляет
      * `*.tmp`, и никто, кроме следующей сборки, их не уберёт.
      *
+     * Каталог обходится итератором, а не маской: `FilesystemIterator` читает записи лениво, не
+     * собирая массив путей, а условие отбора остаётся обычным PHP-кодом — его видно и можно
+     * расширить, тогда как glob-маска дополнительно приносит свой синтаксис (`[`, `?`, `{}`),
+     * который в именах файлов означал бы не то, что кажется.
+     *
+     * Имена сначала собираются, и только потом удаляются: изменять каталог, по которому идёт
+     * незавершённый обход, POSIX не запрещает, но и не обещает, что оставшиеся записи будут
+     * прочитаны. Список имён одного каталога карты заведомо мал.
+     *
      * @param list<string> $keep имена, которые оставить
      * @return int сколько файлов удалено
      */
     public function prune(array $keep): int
     {
         $keep = array_flip($keep);
-        $removed = 0;
-        $directory = $this->directory() . DIRECTORY_SEPARATOR;
+        $doomed = [];
 
-        foreach ((array)glob($directory . 'sitemap-*.xml') as $path) {
-            $name = basename((string)$path);
+        $entries = new FilesystemIterator(
+            $this->directory(),
+            FilesystemIterator::SKIP_DOTS | FilesystemIterator::CURRENT_AS_FILEINFO,
+        );
 
-            if (!isset($keep[$name]) && @unlink((string)$path)) {
-                $removed++;
+        /** @var SplFileInfo $entry */
+        foreach ($entries as $entry) {
+            if (!$entry->isFile()) {
+                continue;
+            }
+
+            $name = $entry->getFilename();
+
+            $isOrphanPart = str_starts_with($name, 'sitemap-')
+                && str_ends_with($name, '.xml')
+                && !isset($keep[$name]);
+
+            if ($isOrphanPart || str_ends_with($name, '.tmp')) {
+                $doomed[] = $entry->getPathname();
             }
         }
 
-        foreach ((array)glob($directory . '*.tmp') as $path) {
-            if (@unlink((string)$path)) {
+        $removed = 0;
+
+        foreach ($doomed as $path) {
+            if (@unlink($path)) {
                 $removed++;
             }
         }

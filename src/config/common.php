@@ -49,8 +49,21 @@ return [
                 ['pattern' => 'sitemap', 'route' => 'Sitemap/xml/index', 'suffix' => '.xml'],
                 ['pattern' => 'sitemap-<name:[a-z0-9-]+>', 'route' => 'Sitemap/xml/section', 'suffix' => '.xml'],
 
-                // `/sitemap` — человеческая карта. С правилом выше не конфликтует: там другой
-                // pathInfo (`sitemap.xml`), и суффиксное правило проверяется раньше.
+                // `/sitemap` — человеческая карта. С правилами выше не конфликтует: там другой
+                // pathInfo (`sitemap.xml`), и суффиксные правила проверяются раньше.
+                //
+                // Правил два, и первое существует ради каталога целей меню. Модуль меню строит
+                // адрес единообразно — `createUrl([$route, $slugParam => $slug])` (см.
+                // `MenuTargetRegistry::buildUrl()`), — а у карты сайта параметров нет вовсе.
+                // Правило с `defaults` этот параметр поглощает: значение, совпадающее с умолчанием,
+                // Yii в query-строку не выносит, и в меню попадает чистый `/sitemap` вместо
+                // `/sitemap?slug=sitemap`. Второе правило обслуживает обычные ссылки — без `slug`
+                // первое возвращает false и уступает ему.
+                [
+                    'pattern' => 'sitemap',
+                    'route' => 'Sitemap/map/index',
+                    'defaults' => ['slug' => Module::MENU_SLUG],
+                ],
                 'sitemap' => 'Sitemap/map/index',
             ],
         ],

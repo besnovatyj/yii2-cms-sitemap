@@ -353,7 +353,7 @@ final class SitemapBuilder
             }
         }
 
-        (new XmlIndexWriter($this->storage))->write($items);
+        new XmlIndexWriter($this->storage)->write($items);
     }
 
     /**

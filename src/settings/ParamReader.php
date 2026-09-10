@@ -86,8 +86,9 @@ final readonly class ParamReader
      */
     public function list(string $key): array
     {
-        // Именно \r\n перечислением: escape-последовательность \R (любой перевод строки) внутри
-        // символьного класса PCRE недопустима и роняет компиляцию шаблона.
+        // Разделители перечислены поштучно (\r, \n), потому что здесь символьный класс: внутри
+        // `[...]` escape-последовательность \R недопустима и роняет компиляцию шаблона. Отдельным
+        // атомом \R работать не мешает ничто — так он и применён в {@see lines()}.
         $parts = preg_split('/[,\r\n]+/u', $this->string($key)) ?: [];
 
         return array_values(array_filter(
@@ -104,6 +105,8 @@ final readonly class ParamReader
      */
     public function lines(string $key): array
     {
+        // Здесь \R уместен: он стоит самостоятельным атомом, а не внутри `[...]`, и покрывает
+        // все переводы строк разом — включая одиночный \r из старых редакторов.
         $parts = preg_split('/\R/u', $this->string($key)) ?: [];
 
         return array_values(array_filter(
