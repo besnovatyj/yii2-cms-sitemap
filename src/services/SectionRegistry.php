@@ -11,6 +11,7 @@ namespace Besnovatyj\Sitemap\services;
 use Besnovatyj\Contracts\sitemap\SitemapFreshness;
 use Besnovatyj\Contracts\sitemap\SitemapProvider;
 use Besnovatyj\Contracts\sitemap\SitemapSection;
+use Besnovatyj\Kernel\module\ModuleFinder;
 use Besnovatyj\Sitemap\settings\SitemapSettings;
 use Throwable;
 use Yii;
@@ -18,9 +19,9 @@ use Yii;
 /**
  * Реестр разделов карты: находит модули-провайдеры и сводит их объявления в один список.
  *
- * Обход зарегистрированных модулей с проверкой `instanceof` — тот же приём, что в
+ * Обход зарегистрированных модулей по контракту ({@see ModuleFinder}) — тот же приём, что в
  * {@see \Besnovatyj\Search\services\SourceRegistry} и реестре целей меню: модуль карты не знает
- * имён контентных модулей, а они не знают о нём. Отключённый в modman модуль в конфиг приложения
+ * имён контентных модулей, а они не знают о нём; инстанцируются только модули-провайдеры. Отключённый в modman модуль в конфиг приложения
  * не попадает, поэтому и в реестре не появится — отдельной проверки активности не нужно.
  *
  * Поверх объявлений накладываются настройки администратора: выключённые разделы исчезают из карты,
@@ -53,17 +54,7 @@ final class SectionRegistry
             return $this->providers;
         }
 
-        $providers = [];
-
-        foreach (array_keys(Yii::$app->getModules()) as $id) {
-            $module = Yii::$app->getModule((string)$id);
-
-            if ($module instanceof SitemapProvider) {
-                $providers[(string)$id] = $module;
-            }
-        }
-
-        return $this->providers = $providers;
+        return $this->providers = ModuleFinder::implementing(SitemapProvider::class);
     }
 
     /**
