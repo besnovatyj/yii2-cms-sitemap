@@ -19,8 +19,10 @@ use Besnovatyj\Sitemap\storage\SitemapStorage;
 use Throwable;
 use Yii;
 use yii\filters\VerbFilter;
+use yii\web\ConflictHttpException;
 use yii\web\Controller;
 use yii\web\Response;
+use yii\web\ServerErrorHttpException;
 
 /**
  * Состояние карты сайта и её пересборка из админки.
@@ -85,10 +87,14 @@ class IndexController extends Controller
      * объёме карту следует собирать консолью: там нет ни лимита времени веб-сервера, ни занятого
      * воркера PHP-FPM.
      */
-    public function actionBuild(): Response
+    public function actionBuild(): Response|array
     {
         if (function_exists('set_time_limit')) {
             @set_time_limit(600);
+        }
+
+        if (Yii::$app->request->getIsAjax()) {
+            return $this->buildAsJson();
         }
 
         try {
@@ -114,5 +120,50 @@ class IndexController extends Controller
         }
 
         return $this->redirect(['index']);
+    }
+
+    /**
+     * Та же сборка, но для плитки дашборда: ответ — обновлённые числа, а не редирект.
+     *
+     * Сделано ответвлением одного экшена, а не вторым: операция ровно та же, и раздваивать её
+     * значило бы получить две точки, где однажды разойдутся таймаут, права и поведение.
+     * Различается только конверт ответа.
+     *
+     * Занятый замок сборки — не ошибка, а состояние: карту в этот момент собирает крон или
+     * соседняя вкладка. Отдаётся 409 с объяснением, и плитка показывает его как сообщение.
+     * Числа при этом берутся из текущего манифеста — он мог обновиться тем самым процессом.
+     *
+     * @return array{urls:int,htmlUrls:int,seconds:float,built:string,warning:string|null}
+     *
+     * @throws ConflictHttpException     если сборку уже ведёт другой процесс
+     * @throws ServerErrorHttpException  если сборка не удалась — причина уже в журнале
+     */
+    private function buildAsJson(): array
+    {
+        Yii::$app->response->format = Response::FORMAT_JSON;
+
+        try {
+            $report = $this->builder->build();
+        } catch (BuildInProgressException $e) {
+            throw new ConflictHttpException($e->getMessage() . ' Обновите панель через минуту.', 0, $e);
+        } catch (Throwable $e) {
+            Yii::error('Сборка карты сайта из дашборда не удалась: ' . $e->getMessage(), 'sitemap/build');
+
+            throw new ServerErrorHttpException('Не удалось собрать карту: ' . $e->getMessage(), 0, $e);
+        }
+
+        $failed = $report->failed();
+
+        return [
+            'urls' => $report->urls,
+            'htmlUrls' => $report->htmlUrls,
+            'seconds' => round($report->seconds, 1),
+            'built' => 'Собрана ' . Yii::$app->formatter->asRelativeTime(time()),
+            // Несобравшийся раздел не отменяет сборку, но молчать о нём нельзя: в карте не хватает
+            // его адресов. Перечень разделов — на странице состояния, в плитке только счёт.
+            'warning' => $failed === []
+                ? null
+                : 'Собрана, но разделов с ошибкой: ' . count($failed) . ' — подробности на странице карты',
+        ];
     }
 }
