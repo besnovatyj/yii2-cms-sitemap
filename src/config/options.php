@@ -28,7 +28,7 @@ use Besnovatyj\Sitemap\settings\HtmlVariantOptionItems;
 return [
     'sitemap_disabled_sections' => [
         'path'        => 'modules.Sitemap.params.disabledSections',
-        'label'       => '[Sitemap] Исключённые разделы',
+        'label'       => 'Исключённые разделы',
         'description' => 'Ключи разделов через запятую, напр.: blog.taxonomy, gallery.category',
         'category'    => 'Sitemap',
         'rules'       => [
@@ -41,7 +41,7 @@ return [
 
     'sitemap_priorities' => [
         'path'        => 'modules.Sitemap.params.priorities',
-        'label'       => '[Sitemap] Приоритеты разделов',
+        'label'       => 'Приоритеты разделов',
         'description' => 'Ключ: значение 0.0–1.0 через запятую, напр.: blog.post: 0.8, page.page: 0.6',
         'category'    => 'Sitemap',
         'rules'       => [
@@ -54,7 +54,7 @@ return [
 
     'sitemap_change_frequencies' => [
         'path'        => 'modules.Sitemap.params.changeFrequencies',
-        'label'       => '[Sitemap] Частота изменения разделов',
+        'label'       => 'Частота изменения разделов',
         'description' => 'Ключ: частота через запятую, напр.: blog.post: daily, page.page: monthly. '
             . 'Допустимо: always, hourly, daily, weekly, monthly, yearly, never',
         'category'    => 'Sitemap',
@@ -68,7 +68,7 @@ return [
 
     'sitemap_extra_urls' => [
         'path'        => 'modules.Sitemap.params.extraUrls',
-        'label'       => '[Sitemap] Дополнительные адреса',
+        'label'       => 'Дополнительные адреса',
         'description' => 'По одному в строке: путь ; частота ; приоритет ; Заголовок. '
             . 'Обязателен только путь. Здесь объявляется главная страница и всё, у чего нет своего модуля',
         'category'    => 'Sitemap',
@@ -82,7 +82,7 @@ return [
 
     'sitemap_urls_per_file' => [
         'path'        => 'modules.Sitemap.params.urlsPerFile',
-        'label'       => '[Sitemap] Адресов в одном файле',
+        'label'       => 'Адресов в одном файле',
         'description' => 'Предел протокола — 50 000; при переполнении раздел режется на части автоматически',
         'category'    => 'Sitemap',
         'rules'       => [
@@ -96,7 +96,7 @@ return [
 
     'sitemap_ttl' => [
         'path'        => 'modules.Sitemap.params.ttl',
-        'label'       => '[Sitemap] Срок годности карты, минут',
+        'label'       => 'Срок годности карты, минут',
         'description' => 'После этого срока карта пересобирается сама при первом обращении. '
             . '0 — только вручную и по расписанию (рекомендуется, если настроен крон)',
         'category'    => 'Sitemap',
@@ -111,7 +111,7 @@ return [
 
     'sitemap_html_enabled' => [
         'path'        => 'modules.Sitemap.params.htmlEnabled',
-        'label'       => '[Sitemap] Показывать карту сайта посетителям',
+        'label'       => 'Показывать карту сайта посетителям',
         'description' => 'Страница /sitemap с оглавлением сайта',
         'category'    => 'Sitemap',
         'rules'       => [
@@ -124,7 +124,7 @@ return [
 
     'sitemap_html_variant' => [
         'path'        => 'modules.Sitemap.params.htmlVariant',
-        'label'       => '[Sitemap] Вариант оформления карты',
+        'label'       => 'Вариант оформления карты',
         'description' => 'Варианты предлагает активная тема; «—» — базовое представление модуля',
         'category'    => 'Sitemap',
         'inputOptions' => [
